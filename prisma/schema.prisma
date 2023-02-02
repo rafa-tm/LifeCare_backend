@@ -45,7 +45,7 @@ model Consulta {
   clienteId      String
   profissionalId String
   data           String
-  hora           Int
+  hora           String
   estado         Boolean
 
   cliente      Cliente      @relation(fields: [clienteId], references: [id])

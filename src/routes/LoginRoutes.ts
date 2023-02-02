@@ -38,4 +38,14 @@ export default async function LoginRoutes(app: FastifyInstance) {
 
     return { token_cliente: tokenAcess };
   });
+
+  //POST Login do sistema
+  app.post("/verificalogin", async (request, reply) => {
+    const criarProfissionalBody = z.object({
+      token: z.string().uuid(),
+    });
+    const { token } = criarProfissionalBody.parse(request.body);
+
+    reply.code(200).send("Login autorizado");
+  });
 }

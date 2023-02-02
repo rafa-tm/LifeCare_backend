@@ -30,7 +30,7 @@ CREATE TABLE "Consulta" (
     "clienteId" TEXT NOT NULL,
     "profissionalId" TEXT NOT NULL,
     "data" TEXT NOT NULL,
-    "hora" INTEGER NOT NULL,
+    "hora" TEXT NOT NULL,
     "estado" BOOLEAN NOT NULL,
     CONSTRAINT "Consulta_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "clientes" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "Consulta_profissionalId_fkey" FOREIGN KEY ("profissionalId") REFERENCES "profissionais" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
