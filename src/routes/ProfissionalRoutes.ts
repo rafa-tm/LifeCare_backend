@@ -71,30 +71,39 @@ export default async function ProfissionalRoutes(app: FastifyInstance) {
     return listaProfissionaisNome;
   });
 
-  app.get("/profissionais/filtros", async (request) => {
+  app.post("/filtrosProfissionais", async (request) => {
     const filtrosParam = z.object({
       nome: z.string(),
       area: z.string(),
       especialidade: z.string(),
     });
 
-    const { nome, area, especialidade } = filtrosParam.parse(request.query);
+    const { nome, area, especialidade } = filtrosParam.parse(request.body);
+
+    if (nome == "" && area == "" && especialidade == "") {
+      const listaProfissionaisfiltros = await prisma.profissional.findMany();
+      return listaProfissionaisfiltros;
+    }
+
     const listaProfissionaisfiltros = await prisma.profissional.findMany({
       where: {
-        OR: [
+        AND: [
           {
             nome: {
               contains: nome,
+              not: "",
             },
           },
           {
             area: {
               contains: area,
+              not: "",
             },
           },
           {
             especialidade: {
               contains: especialidade,
+              not: "",
             },
           },
         ],

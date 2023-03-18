@@ -4,20 +4,19 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 
 export default async function LoginRoutes(app: FastifyInstance) {
-  const tokenAcess = randomUUID();
-
+  let tokenAcess = "";
   //POST Login do sistema
   app.post("/login", async (request, reply) => {
     const criarProfissionalBody = z.object({
       email: z.string(),
       senha: z.string(),
     });
+
     const { email, senha } = criarProfissionalBody.parse(request.body);
 
     const cliente = await prisma.cliente.findFirst({
       where: {
         email: email,
-        senha: senha,
       },
     });
 
@@ -25,27 +24,57 @@ export default async function LoginRoutes(app: FastifyInstance) {
       const profissional = await prisma.profissional.findFirst({
         where: {
           email: email,
-          senha: senha,
         },
       });
       if (!profissional) {
         reply.code(401).send({ erro: "Usuário não cadastrado" });
         return;
       } else {
-        return { token_profissional: tokenAcess };
+        if (profissional.senha === senha) {
+          tokenAcess = profissional.id;
+          return { token: tokenAcess, type: "profissional" };
+        } else {
+          reply.code(401).send({ erro: "Senha incorreta" });
+          return;
+        }
       }
     }
 
-    return { token_cliente: tokenAcess };
+    if (cliente.senha === senha) {
+      tokenAcess = cliente.id;
+      return { token: tokenAcess, type: "cliente" };
+    } else {
+      reply.code(401).send({ erro: "Senha incorreta" });
+      return;
+    }
   });
 
-  //POST Login do sistema
+  //POST Verifica login do sistema
   app.post("/verificalogin", async (request, reply) => {
     const criarProfissionalBody = z.object({
       token: z.string().uuid(),
     });
     const { token } = criarProfissionalBody.parse(request.body);
 
-    reply.code(200).send("Login autorizado");
+    const cliente = await prisma.cliente.findFirst({
+      where: {
+        id: token,
+      },
+    });
+
+    if (!cliente) {
+      const profissional = await prisma.profissional.findFirst({
+        where: {
+          id: token,
+        },
+      });
+      if (!profissional) {
+        reply.code(401).send({ erro: "Erro no token" });
+        return;
+      } else {
+        return { user: profissional };
+      }
+    }
+    return { user: cliente };
   });
 }

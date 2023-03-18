@@ -40,19 +40,19 @@ export default async function ClienteRoutes(app: FastifyInstance) {
     });
   });
 
-  //GET lista cliente de ID = ?
+  //GET cliente de ID = ?
   app.get("/clientes/:id", async (request) => {
     const idClienteParam = z.object({
       id: z.string().uuid(),
     });
 
     const { id } = idClienteParam.parse(request.params);
-    const clientes = await prisma.cliente.findUnique({
+    const cliente = await prisma.cliente.findUnique({
       where: {
         id: id,
       },
     });
 
-    return clientes;
+    return cliente;
   });
 }
