@@ -69,7 +69,7 @@ export default async function LoginRoutes(app: FastifyInstance) {
         },
       });
       if (!profissional) {
-        reply.code(401).send({ erro: "Erro no token" });
+        reply.code(401).send({ erro: "Erro no token, faça login novamente!" });
         return;
       } else {
         return { user: profissional };

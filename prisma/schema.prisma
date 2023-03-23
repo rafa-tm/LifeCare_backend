@@ -50,6 +50,4 @@ model Consulta {
 
   cliente      Cliente      @relation(fields: [clienteId], references: [id])
   profissional Profissional @relation(fields: [profissionalId], references: [id])
-
-  @@unique([clienteId, profissionalId])
 }

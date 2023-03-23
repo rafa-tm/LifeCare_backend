@@ -53,22 +53,20 @@ export default async function ProfissionalRoutes(app: FastifyInstance) {
     });
   });
 
-  //GET lista de profissionais com por nome
-  app.get("/profissionais/filtro", async (request) => {
-    const filtroParam = z.object({
-      nome: z.string(),
+  //GET profissional de ID = ?
+  app.get("/profissionais/:id", async (request) => {
+    const idProfissionalParam = z.object({
+      id: z.string().uuid(),
     });
 
-    const { nome } = filtroParam.parse(request.query);
-    const listaProfissionaisNome = await prisma.profissional.findMany({
+    const { id } = idProfissionalParam.parse(request.params);
+    const profissional = await prisma.profissional.findUnique({
       where: {
-        nome: {
-          contains: nome,
-        },
+        id: id,
       },
     });
 
-    return listaProfissionaisNome;
+    return profissional;
   });
 
   app.post("/filtrosProfissionais", async (request) => {
@@ -76,11 +74,14 @@ export default async function ProfissionalRoutes(app: FastifyInstance) {
       nome: z.string(),
       area: z.string(),
       especialidade: z.string(),
+      cidade: z.string(),
     });
 
-    const { nome, area, especialidade } = filtrosParam.parse(request.body);
+    const { nome, area, especialidade, cidade } = filtrosParam.parse(
+      request.body
+    );
 
-    if (nome == "" && area == "" && especialidade == "") {
+    if (nome == "" && area == "" && especialidade == "" && cidade == "") {
       const listaProfissionaisfiltros = await prisma.profissional.findMany();
       return listaProfissionaisfiltros;
     }
@@ -103,6 +104,12 @@ export default async function ProfissionalRoutes(app: FastifyInstance) {
           {
             especialidade: {
               contains: especialidade,
+              not: "",
+            },
+          },
+          {
+            cidade: {
+              contains: cidade,
               not: "",
             },
           },

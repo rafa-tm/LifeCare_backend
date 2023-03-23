@@ -1,13 +1,43 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { prisma } from "../lib/prisma";
+import { add, format, parse } from "date-fns";
 
 export default async function ConsultaRoutes(app: FastifyInstance) {
   //GET todas as consultas
   app.get("/consultas", async () => {
     const consultas = await prisma.consulta.findMany();
-
     return consultas;
+  });
+
+  //POST cria nova consulta
+  app.post("/consultas", async (request, response) => {
+    const criarConsultaBody = z.object({
+      clienteId: z.string().uuid(),
+      profissionalId: z.string().uuid(),
+      data: z.string(),
+      hora: z.string(),
+      estado: z.boolean(),
+    });
+
+    let { clienteId, profissionalId, data, hora, estado } =
+      criarConsultaBody.parse(request.body);
+
+    data = format(add(new Date(data), { days: 1 }), "dd/MM/yyyy");
+
+    await prisma.consulta
+      .create({
+        data: {
+          clienteId,
+          profissionalId,
+          data,
+          hora,
+          estado,
+        },
+      })
+      .then(() => {
+        response.status(200);
+      });
   });
 
   //POST todas as consultas do usuário
@@ -84,27 +114,45 @@ export default async function ConsultaRoutes(app: FastifyInstance) {
     }
   });
 
-  //POST cria nova consulta
-  app.post("/consultas", async (request) => {
-    const criarConsultaBody = z.object({
-      clienteId: z.string().uuid(),
-      profissionalId: z.string().uuid(),
-      data: z.string(),
-      hora: z.string(),
-      estado: z.boolean(),
+  //PUT altera estado da consulta
+  app.put("/consultas/:id", async (request, response) => {
+    const alteraConsultaBody = z.object({
+      id: z.string().uuid(),
     });
 
-    const { clienteId, profissionalId, data, hora, estado } =
-      criarConsultaBody.parse(request.body);
+    const { id } = alteraConsultaBody.parse(request.params);
+    const estado = false;
 
-    await prisma.consulta.create({
-      data: {
-        clienteId,
-        profissionalId,
-        data,
-        hora,
-        estado,
-      },
+    await prisma.consulta
+      .update({
+        where: {
+          id: id,
+        },
+        data: {
+          estado,
+        },
+      })
+      .then(() => {
+        response.status(200);
+      });
+  });
+
+  //DELETE deleta consulta
+  app.delete("/consultas/:id", async (request, response) => {
+    const deletaConsultaBody = z.object({
+      id: z.string().uuid(),
     });
+
+    const { id } = deletaConsultaBody.parse(request.params);
+
+    await prisma.consulta
+      .delete({
+        where: {
+          id: id,
+        },
+      })
+      .then(() => {
+        response.status(200);
+      });
   });
 }
